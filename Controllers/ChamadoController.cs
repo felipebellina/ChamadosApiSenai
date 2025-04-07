@@ -1,6 +1,7 @@
 ﻿using ChamdosAPI.Data;
 using ChamdosAPI.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ChamadosAPI.Controllers;
 [Route("api/[controller]")]
@@ -14,6 +15,21 @@ public class ChamadoController : ControllerBase
         _appDbContext = appDbContext;
     }
 
+    [HttpGet]
+    public async Task<IActionResult> GetAsync()
+    {
+        var chamados = _appDbContext.Chamados;
+        return chamados == null ? NotFound() : Ok(chamados);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
+    {
+        var chamado = await _appDbContext.Chamados.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+
+        return chamado == null ? NotFound() : Ok(chamado);
+    }
+
     [HttpPost]
     public async Task<IActionResult> PostAsync([FromBody]Chamado chamado)
     {
@@ -21,5 +37,48 @@ public class ChamadoController : ControllerBase
         await _appDbContext.SaveChangesAsync();
         
         return Ok(chamado);
+    }
+
+    [HttpPut]
+    public async Task<IActionResult> PutAsync([FromBody]Chamado model, [FromRoute] int id)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest();
+
+        var chamado = await _appDbContext.Chamados.FirstOrDefaultAsync(x => x.Id == id);
+
+        if (chamado == null)
+            return NotFound();
+
+        try
+        {
+            chamado.Titulo = model.Titulo;
+
+            _appDbContext.Chamados.Update(chamado);
+            await _appDbContext.SaveChangesAsync();
+            return Ok(chamado);
+        }
+        catch (Exception message)
+        {
+            return BadRequest();
+        }
+    }
+
+    [HttpDelete]
+    public async Task<IActionResult> DeleteAsync([FromRoute] int id)
+    {
+        var chamado = await _appDbContext.Chamados.FirstOrDefaultAsync(x => x.Id == id);
+
+        try
+        {
+            _appDbContext.Chamados.Remove(chamado);
+            await _appDbContext.SaveChangesAsync();
+
+            return Ok();
+        }
+        catch (Exception message)
+        {
+            return BadRequest();
+        }
     }
 }
