@@ -30,7 +30,7 @@ public class ChamadoController : ControllerBase
         return chamado == null ? NotFound() : Ok(chamado);
     }
 
-    [HttpPost]
+    [HttpPost("Create")]
     public async Task<IActionResult> PostAsync([FromBody]Chamado chamado)
     {
         _appDbContext.Chamados.Add(chamado);
@@ -39,7 +39,7 @@ public class ChamadoController : ControllerBase
         return Ok(chamado);
     }
 
-    [HttpPut]
+    [HttpPut("Edit/{id}")]
     public async Task<IActionResult> PutAsync([FromBody]Chamado model, [FromRoute] int id)
     {
         if (!ModelState.IsValid)
@@ -53,6 +53,9 @@ public class ChamadoController : ControllerBase
         try
         {
             chamado.Titulo = model.Titulo;
+            chamado.Descricao = model.Descricao;
+            chamado.Status = model.Status;
+            chamado.DataFechamento = model.DataFechamento;
 
             _appDbContext.Chamados.Update(chamado);
             await _appDbContext.SaveChangesAsync();
@@ -64,7 +67,7 @@ public class ChamadoController : ControllerBase
         }
     }
 
-    [HttpDelete]
+    [HttpDelete("Delete/{id}")]
     public async Task<IActionResult> DeleteAsync([FromRoute] int id)
     {
         var chamado = await _appDbContext.Chamados.FirstOrDefaultAsync(x => x.Id == id);
